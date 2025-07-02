@@ -1619,38 +1619,7 @@
         
         // 初始化数据
         function initializeData() {
-            // 加载数据或使用默认值
-            activeOrders = loadData(STORAGE_KEYS.ACTIVE_ORDERS, generateOrders());
-            completedOrders = loadData(STORAGE_KEYS.COMPLETED_ORDERS, [
-                {
-                    id: 'ORD-334567',
-                    desk: "一号桌",
-                    time: new Date().toLocaleString('zh-CN'),
-                    items: [
-                        { name: '京葱鸡肉', price: 6, quantity: 2 },
-                        { name: '鸡软骨', price: 6, quantity: 1 },
-                        { name: '可乐', price: 5, quantity: 2 }
-                    ],
-                    status: '已完成',
-                    statusClass: 'completed',
-                    staff: '张明',
-                    notes: '',
-                    total: 29
-                },
-                {
-                    id: 'ORD-112378',
-                    desk: "五号桌",
-                    time: new Date().toLocaleString('zh-CN'),
-                    items: [
-                        { name: '梅酒', price: 98, quantity: 1 }
-                    ],
-                    status: '已完成',
-                    statusClass: 'completed',
-                    staff: '李华',
-                    notes: '加冰',
-                    total: 98
-                }
-            ]);
+            
             menuItems = loadData(STORAGE_KEYS.MENU_ITEMS, generateMenuItems());
             desks = loadData(STORAGE_KEYS.DESKS, [
                 { id: 1, number: "一号桌", capacity: 4, status: "occupied", location: "靠窗位置" },
@@ -1706,22 +1675,65 @@
             
             // 刷新订单按钮
             document.getElementById('refreshOrdersBtn').addEventListener('click', () => {
-                // 模拟获取新订单
-                const newOrder = {
-                    id: `ORD-${Math.floor(Math.random() * 900000 + 100000)}`,
-                    desk: desks[Math.floor(Math.random() * desks.length)].number,
-                    time: new Date().toLocaleString('zh-CN'),
-                    items: [
-                        { name: '京葱鸡肉', price: 6, quantity: Math.floor(Math.random() * 3) + 1 },
-                        { name: '鸡软骨', price: 6, quantity: Math.floor(Math.random() * 2) + 1 },
-                        { name: '可乐', price: 5, quantity: Math.floor(Math.random() * 2) + 1 }
-                    ],
-                    status: '待处理',
-                    statusClass: 'pending',
-                    staff: ['张明', '李华', '王芳'][Math.floor(Math.random() * 3)],
-                    notes: '',
-                    total: 0
-                };
+                function initializeData() {
+    // 加载活动订单
+    activeOrders = loadActiveOrders();
+    
+    // 加载已完成订单
+    completedOrders = loadData(STORAGE_KEYS.COMPLETED_ORDERS, []);
+}
+
+// 新增：从localStorage加载活动订单
+function loadActiveOrders() {
+    const orders = [];
+    const deskKeys = ['desk1Order', 'desk2Order', 'desk3Order', 'desk4Order'];
+    
+    deskKeys.forEach(key => {
+        const orderData = localStorage.getItem(key);
+        if (orderData) {
+            const order = JSON.parse(orderData);
+            // 只显示未完成订单
+            if (order.status !== 'completed') {
+                orders.push(order);
+            }
+        }
+    });
+    
+    return orders;
+}
+
+// 新增：监听订单变化
+window.addEventListener('storage', function(e) {
+    if (e.key.startsWith('desk') && e.key.endsWith('Order')) {
+        activeOrders = loadActiveOrders();
+        renderOrdersTable(activeOrders);
+    }
+});
+
+// 在完成订单操作中更新状态
+function completeOrder(order) {
+    // 更新订单状态
+    order.status = 'completed';
+    order.statusClass = 'completed';
+    
+    // 保存到已完成订单
+    completedOrders.push(order);
+    saveData(STORAGE_KEYS.COMPLETED_ORDERS, completedOrders);
+    
+    // 从活动订单中移除
+    const index = activeOrders.findIndex(o => o.id === order.id);
+    if (index !== -1) {
+        activeOrders.splice(index, 1);
+    }
+    
+    // 删除桌号订单
+    const deskKey = `desk${order.desk.replace('号桌', '')}Order`;
+    localStorage.removeItem(deskKey);
+    
+    // 更新UI
+    renderOrdersTable(activeOrders);
+    renderHistoryOrders();
+}
                 
                 // 计算总价
                 newOrder.total = newOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
