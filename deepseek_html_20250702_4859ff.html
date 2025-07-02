@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豫见·日式烧鸟 - 跨设备点餐系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #d35400;
+            --secondary: #e67e22;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --sidebar: #1a2530;
+            --content-bg: #f5f7fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2530, #2c3e50);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 标题样式 */
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 3px solid var(--primary);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo i {
+            color: var(--primary);
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0b3b8;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(211, 84, 0, 0.5);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .card-header i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+        
+        .card-header h2 {
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        /* 系统连接状态 */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+        
+        .status-indicator.connected {
+            background: var(--success);
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #b0b3b8;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.2);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #e67e22;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* 技术架构图 */
+        .architecture {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .layer {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            width: 100%;
+        }
+        
+        .node {
+            background: rgba(52, 152, 219, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            position: relative;
+        }
+        
+        .node:after {
+            content: "";
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: rgba(52, 152, 219, 0.5);
+        }
+        
+        .node.server:after {
+            display: none;
+        }
+        
+        .node i {
+            font-size: 2.5rem;
+            color: var(--info);
+            margin-bottom: 10px;
+        }
+        
+        .node h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .node p {
+            color: #b0b3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            .layer {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .node:after {
+                display: none;
+            }
+            
+            .logo h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* 示例数据 */
+        .sample-data {
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .key {
+            color: #b0b3b8;
+        }
+        
+        .value {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-fire-alt"></i>
+            <h1>豫见·日式烧鸟</h1>
+        </div>
+        <p class="subtitle">跨设备点餐系统解决方案 - 实现不同设备、不同局域网下的实时互联</p>
+    </div>
+    
+    <div class="container">
+        <!-- 解决方案说明 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-network-wired"></i>
+                <h2>网络互联方案</h2>
+            </div>
+            
+            <div class="form-group">
+                <label>服务器地址</label>
+                <input type="text" class="form-control" id="serverUrl" value="https://api.yujian-syakitori.com">
+            </div>
+            
+            <div class="form-group">
+                <label>API密钥</label>
+                <input type="password" class="form-control" id="apiKey" value="sk_****************">
+            </div>
+            
+            <button class="btn btn-primary btn-block" id="connectBtn">
+                <i class="fas fa-plug"></i> 连接到服务器
+            </button>
+            
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">未连接到服务器</span>
+            </div>
+            
+            <div class="sample-data">
+                <h3>连接示例:</h3>
+                <div class="data-item">
+                    <span class="key">设备ID:</span>
+                    <span class="value">DESK-001</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">连接协议:</span>
+                    <span class="value">WebSocket + HTTPS</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">Ping:</span>
+                    <span class="value">42ms</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 技术架构 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-sitemap"></i>
+                <h2>系统架构设计</h2>
+            </div>
+            
+            <div class="architecture">
+                <div class="layer">
+                    <div class="node">
+                        <i class="fas fa-mobile-alt"></i>
+                        <h3>顾客点菜端</h3>
+                        <p>手机/平板设备</p>
+                    </div>
+                    <div class="node">
+                        <i class="fas fa-desktop"></i>
+                        <h3>商家后台</h3>
+                        <p>PC/平板设备</p>
+                    </div>
+                </div>
+                
+                <div class="layer">
+                    <div class="node">
+                        <i class="fas fa-wifi"></i>
+                        <h3>互联网</h3>
+                        <p>HTTPS/WebSocket</p>
+                    </div>
+                </div>
+                
+                <div class="layer">
+                    <div class="node server">
+                        <i class="fas fa-server"></i>
+                        <h3>云服务器</h3>
+                        <p>Node.js + MongoDB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sample-data">
+                <h3>数据交互示例:</h3>
+                <div class="data-item">
+                    <span class="key">新订单:</span>
+                    <span class="value">一号桌提交了订单</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">状态更新:</span>
+                    <span class="value">厨房开始制作三号桌订单</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">实时同步:</span>
+                    <span class="value">所有设备同步更新</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 实现代码示例 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-code"></i>
+                <h2>API 调用示例</h2>
+            </div>
+            
+            <pre><code>// 提交新订单
+async function submitOrder(order) {
+  const response = await fetch(`${serverUrl}/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(order)
+  });
+  return await response.json();
+}
+
+// 监听实时订单更新
+const socket = io(serverUrl, {
+  query: { apiKey }
+});
+
+socket.on('order-update', (order) => {
+  console.log('订单更新:', order);
+  updateOrderDisplay(order);
+});</code></pre>
+            
+            <div class="sample-data">
+                <h3>订单数据结构:</h3>
+                <div class="data-item">
+                    <span class="key">订单ID:</span>
+                    <span class="value">ORD-20230702-001</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">桌号:</span>
+                    <span class="value">一号桌</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">菜品:</span>
+                    <span class="value">京葱鸡肉 x2, 提灯 x1</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">总价:</span>
+                    <span class="value">¥78.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 部署指南 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>部署指南</h2>
+            </div>
+            
+            <ol style="padding-left: 20px; margin-bottom: 20px; line-height: 2;">
+                <li>在云平台部署Node.js服务器（AWS/阿里云/腾讯云）</li>
+                <li>配置MongoDB数据库</li>
+                <li>设置HTTPS证书（使用Let's Encrypt）</li>
+                <li>配置防火墙开放端口（80, 443, 3000）</li>
+                <li>部署前端应用（商家系统+点菜系统）</li>
+                <li>测试跨设备连接</li>
+            </ol>
+            
+            <div class="sample-data">
+                <h3>服务配置:</h3>
+                <div class="data-item">
+                    <span class="key">服务器:</span>
+                    <span class="value">2核4G (推荐)</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">数据库:</span>
+                    <span class="value">MongoDB Atlas</span>
+                </div>
+                <div class="data-item">
+                    <span class="key">网络穿透:</span>
+                    <span class="value">Nginx反向代理</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const connectBtn = document.getElementById('connectBtn');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            // 模拟连接服务器
+            connectBtn.addEventListener('click', function() {
+                statusText.textContent = "连接中...";
+                statusIndicator.className = "status-indicator";
+                
+                // 模拟连接过程
+                setTimeout(function() {
+                    statusIndicator.className = "status-indicator connected";
+                    statusText.textContent = "已连接到服务器";
+                    connectBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 重新连接';
+                    
+                    // 显示成功消息
+                    showNotification("成功连接到服务器！");
+                }, 2000);
+            });
+            
+            // 显示通知函数
+            function showNotification(message) {
+                // 在实际应用中，这里会显示一个通知
+                alert(message);
+            }
+            
+            // 初始状态
+            statusIndicator.className = "status-indicator";
+            statusText.textContent = "未连接到服务器";
+        });
+    </script>
+</body>
+</html>
