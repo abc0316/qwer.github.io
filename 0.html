@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豫见·日式烧鸟 - 商家后台管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        :root {
+            --primary: #d35400;
+            --secondary: #e67e22;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --info: #3498db;
+            --sidebar: #1a2530;
+            --content-bg: #f5f7fa;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .logo-area {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .logo-area h1 {
+            font-size: 1.5rem;
+            margin-top: 15px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            padding: 20px 0;
+        }
+        
+        .nav-links li {
+            list-style: none;
+        }
+        
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 14px 25px;
+            color: #b0b3b8;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header h2 i {
+            color: var(--primary);
+        }
+        
+        .search-area {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            width: 280px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.2);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            padding: 18px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            font-size: 1.3rem;
+            color: var(--dark);
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        /* 表格样式 */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead th {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            text-align: left;
+            color: #555;
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+        }
+        
+        tbody td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            color: #444;
+        }
+        
+        tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: rgba(52, 152, 219, 0.15);
+            color: var(--info);
+        }
+        
+        .status-preparing {
+            background: rgba(230, 126, 34, 0.15);
+            color: var(--secondary);
+        }
+        
+        .status-completed {
+            background: rgba(39, 174, 96, 0.15);
+            color: var(--success);
+        }
+        
+        .btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #e67e22;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #2980b9;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #555;
+        }
+        
+        .btn-outline:hover {
+            background: #f8f9fa;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* 订单详情弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.4rem;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .order-details {
+            margin-bottom: 25px;
+        }
+        
+        .order-details h4 {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .order-items {
+            margin-top: 15px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid var(--primary);
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* 导出按钮区域 */
+        .export-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .desk-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .desk-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .desk-btn:hover, .desk-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        
+        .highlight {
+            background: rgba(211, 84, 0, 0.1);
+            font-weight: 600;
+        }
+        
+        /* 菜单管理 */
+        .menu-categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .menu-category {
+            padding: 8px 15px;
+            background: #f0f2f5;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .menu-category.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .menu-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .menu-item-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .menu-item-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .menu-item-img {
+            height: 160px;
+            background: linear-gradient(45deg, #f5f7fa, #e4e7eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 3rem;
+        }
+        
+        .menu-item-info {
+            padding: 15px;
+        }
+        
+        .menu-item-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .menu-item-price {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        
+        /* 桌台管理样式 */
+        .desks-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .desk-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .desk-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .desk-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .desk-status.occupied {
+            background: rgba(231, 76, 60, 0.15);
+            color: var(--danger);
+        }
+        
+        .desk-status.available {
+            background: rgba(39, 174, 96, 0.15);
+            color: var(--success);
+        }
+        
+        .desk-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--dark);
+            margin: 10px 0;
+        }
+        
+        .desk-capacity {
+            color: #777;
+            margin-bottom: 15px;
+        }
+        
+        .desk-actions {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .add-desk-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            cursor: pointer;
+            color: var(--primary);
+            border: 2px dashed var(--primary);
+            background: rgba(211, 84, 0, 0.05);
+        }
+        
+        .add-desk-btn i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(211, 84, 0, 0.2);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .logo-area span, .nav-links span {
+                display: none;
+            }
+            
+            .logo-area {
+                padding: 20px 0;
+            }
+            
+            .nav-links a {
+                justify-content: center;
+                padding: 18px 0;
+            }
+            
+            .nav-links a i {
+                margin-right: 0;
+                font-size: 1.3rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .search-area {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-box input {
+                width: 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边导航 -->
+    <div class="sidebar">
+        <div class="logo-area">
+            <i class="fas fa-fire-alt fa-2x" style="color: #e67e22;"></i>
+            <h1>豫见·日式烧鸟</h1>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="active" data-page="orders"><i class="fas fa-receipt"></i> <span>实时订单</span></a></li>
+            <li><a href="#" data-page="menu-management"><i class="fas fa-utensils"></i> <span>菜单管理</span></a></li>
+            <li><a href="#" data-page="order-management"><i class="fas fa-history"></i> <span>历史订单</span></a></li>
+            <li><a href="#" data-page="tables"><i class="fas fa-table"></i> <span>桌台管理</span></a></li>
+        </ul>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 实时订单页面 -->
+        <div class="page-content" id="orders">
+            <div class="header">
+                <h2><i class="fas fa-receipt"></i> 实时订单</h2>
+                <div class="search-area">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索订单、菜品或桌号...">
+                    </div>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="btn btn-outline">
+                        <i class="fas fa-user"></i> 管理员
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>当前订单</h3>
+                    <div class="export-section">
+                        <button class="btn btn-outline" id="refreshOrdersBtn">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="desk-buttons" id="deskButtons">
+                        <!-- 桌号按钮由JS动态生成 -->
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>桌号</th>
+                                    <th>下单时间</th>
+                                    <th>菜品数量</th>
+                                    <th>订单金额</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- 订单数据由JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 菜单管理页面 -->
+        <div class="page-content" id="menu-management" style="display: none;">
+            <div class="header">
+                <h2><i class="fas fa-utensils"></i> 菜单管理</h2>
+                <div class="search-area">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="menuSearchInput" placeholder="搜索菜品...">
+                    </div>
+                    <button class="btn btn-primary" id="addMenuItemBtn">
+                        <i class="fas fa-plus"></i> 添加菜品
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="menu-categories" id="menuCategories">
+                        <div class="menu-category active" data-category="all">全部</div>
+                        <div class="menu-category" data-category="chicken">常规烧鸟</div>
+                        <div class="menu-category" data-category="rare">稀有部位</div>
+                        <div class="menu-category" data-category="vegetable">蔬菜类</div>
+                        <div class="menu-category" data-category="meat">其他肉类</div>
+                        <div class="menu-category" data-category="drink">酒水饮料</div>
+                    </div>
+                    
+                    <div class="menu-items-grid" id="menuItemsGrid">
+                        <!-- 菜单项由JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史订单页面 -->
+        <div class="page-content" id="order-management" style="display: none;">
+            <div class="header">
+                <h2><i class="fas fa-history"></i> 历史订单</h2>
+                <div class="search-area">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索订单号...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>已完成订单</h3>
+                    <div class="export-section">
+                        <button class="btn btn-outline" id="exportDailyBtn">
+                            <i class="fas fa-file-export"></i> 导出日订单
+                        </button>
+                        <button class="btn btn-outline" id="exportWeeklyBtn">
+                            <i class="fas fa-file-export"></i> 导出周订单
+                        </button>
+                        <button class="btn btn-primary" id="exportMonthlyBtn">
+                            <i class="fas fa-file-export"></i> 导出月订单
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>订单号</th>
+                                    <th>桌号</th>
+                                    <th>下单时间</th>
+                                    <th>菜品数量</th>
+                                    <th>订单金额</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyOrdersTable">
+                                <!-- 历史订单数据由JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 桌台管理页面 -->
+        <div class="page-content" id="tables" style="display: none;">
+            <div class="header">
+                <h2><i class="fas fa-table"></i> 桌台管理</h2>
+                <div class="search-area">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索桌号...">
+                    </div>
+                    <button class="btn btn-primary" id="addTableBtn">
+                        <i class="fas fa-plus"></i> 添加桌台
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>桌台列表</h3>
+                    <div class="export-section">
+                        <button class="btn btn-outline" id="refreshDesksBtn">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="desks-container" id="desksContainer">
+                        <!-- 桌台卡片由JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单详情弹窗 -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalOrderTitle">订单详情</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="order-details">
+                    <h4>基本信息</h4>
+                    <div class="row">
+                        <div style="display: flex; gap: 30px; margin-bottom: 15px;">
+                            <div id="orderBasicInfo">
+                                <!-- 订单基本信息由JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4>菜品明细</h4>
+                    <div class="order-items" id="orderItemsList">
+                        <!-- 订单菜品由JS动态生成 -->
+                    </div>
+                    
+                    <div class="order-total">
+                        <div>订单总计：</div>
+                        <div id="orderTotalAmount"></div>
+                    </div>
+                </div>
+                
+                <div class="order-details">
+                    <h4>订单备注</h4>
+                    <p id="orderNotes">无</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">关闭</button>
+                <button class="btn btn-danger" id="deleteOrderBtn">删除订单</button>
+                <button class="btn btn-info" id="editOrderBtn">编辑订单</button>
+                <button class="btn btn-success" id="completeOrderBtn">完成订单</button>
+                <button class="btn btn-primary" id="printOrderBtn" style="display: none;">
+                    <i class="fas fa-print"></i> 打印订单
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑菜单弹窗 -->
+    <div class="modal" id="menuItemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="menuItemModalTitle">添加新菜品</h3>
+                <button class="close-modal" onclick="closeMenuItemModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>菜品名称</label>
+                        <input type="text" class="form-control" id="menuItemName" placeholder="例如：京葱鸡肉">
+                    </div>
+                    <div class="form-group">
+                        <label>价格 (¥)</label>
+                        <input type="number" class="form-control" id="menuItemPrice" min="0" step="0.01" placeholder="例如：6.00">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>分类</label>
+                    <select class="form-control" id="menuItemCategory">
+                        <option value="chicken">常规烧鸟</option>
+                        <option value="rare">稀有部位</option>
+                        <option value="vegetable">蔬菜类</option>
+                        <option value="meat">其他肉类</option>
+                        <option value="drink">酒水饮料</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>菜品描述</label>
+                    <textarea class="form-control" id="menuItemDescription" rows="3" placeholder="菜品描述..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeMenuItemModal()">取消</button>
+                <button class="btn btn-primary" id="saveMenuItemBtn">保存菜品</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加桌台弹窗 -->
+    <div class="modal" id="addTableModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加新桌台</h3>
+                <button class="close-modal" onclick="closeAddTableModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>桌台编号</label>
+                    <input type="text" class="form-control" id="tableNumber" placeholder="例如：一号桌、二号桌等">
+                </div>
+                
+                <div class="form-group">
+                    <label>座位数量</label>
+                    <input type="number" class="form-control" id="tableCapacity" min="1" max="20" value="4">
+                </div>
+                
+                <div class="form-group">
+                    <label>位置描述</label>
+                    <input type="text" class="form-control" id="tableLocation" placeholder="例如：靠窗、吧台旁等">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeAddTableModal()">取消</button>
+                <button class="btn btn-primary" id="saveTableBtn">保存桌台</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储键
+        const STORAGE_KEYS = {
+            ACTIVE_ORDERS: 'activeOrders',
+            COMPLETED_ORDERS: 'completedOrders',
+            MENU_ITEMS: 'menuItems',
+            DESKS: 'desks'
+        };
+        
+        // 订单数据存储
+        let activeOrders = [];
+        let completedOrders = [];
+        let menuItems = [];
+        let desks = [];
+        
+        // 当前弹窗中的订单
+        let currentModalOrder = null;
+        // 当前编辑的菜单项
+        let currentMenuItem = null;
+        
+        // 查看订单详情
+        function viewOrderDetails(order) {
+            document.getElementById('modalOrderTitle').textContent = `订单详情 - ${order.id}`;
+            
+            // 更新基本信息
+            const basicInfoHtml = `
+                <p><strong>桌号：</strong> ${order.desk}</p>
+                <p><strong>下单时间：</strong> ${order.time}</p>
+                <p><strong>订单状态：</strong> <span class="status status-${order.statusClass}">${order.status}</span></p>
+                <p><strong>服务员：</strong> ${order.staff}</p>
+            `;
+            document.getElementById('orderBasicInfo').innerHTML = basicInfoHtml;
+            
+            // 更新菜品列表
+            let itemsHtml = '';
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <div class="order-item ${item.added ? 'highlight' : ''}">
+                        <div>${item.name} × ${item.quantity} ${item.added ? '<span style="color: var(--danger);">(加菜)</span>' : ''}</div>
+                        <div>¥${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('orderItemsList').innerHTML = itemsHtml;
+            
+            // 更新总金额
+            document.getElementById('orderTotalAmount').textContent = `¥${order.total.toFixed(2)}`;
+            
+            // 更新备注
+            document.getElementById('orderNotes').textContent = order.notes || '无';
+            
+            // 显示/隐藏按钮
+            if (order.statusClass === 'completed') {
+                document.getElementById('completeOrderBtn').style.display = 'none';
+                document.getElementById('printOrderBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('completeOrderBtn').style.display = 'inline-block';
+                document.getElementById('printOrderBtn').style.display = 'none';
+            }
+            
+            // 存储当前订单
+            currentModalOrder = order;
+            
+            // 显示弹窗
+            document.getElementById('orderModal').style.display = 'flex';
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+        
+        // 关闭添加桌台弹窗
+        function closeAddTableModal() {
+            document.getElementById('addTableModal').style.display = 'none';
+        }
+        
+        // 关闭菜单项弹窗
+        function closeMenuItemModal() {
+            document.getElementById('menuItemModal').style.display = 'none';
+            currentMenuItem = null;
+        }
+        
+        // 桌号按钮切换
+        function setupDeskButtons() {
+            const deskButtons = document.getElementById('deskButtons');
+            deskButtons.innerHTML = '';
+            
+            // 添加"全部桌台"按钮
+            const allButton = document.createElement('button');
+            allButton.className = 'desk-btn active';
+            allButton.textContent = '全部桌台';
+            allButton.addEventListener('click', function() {
+                document.querySelectorAll('.desk-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                renderOrdersTable(activeOrders);
+            });
+            deskButtons.appendChild(allButton);
+            
+            // 为每个桌台添加按钮
+            desks.forEach(desk => {
+                const button = document.createElement('button');
+                button.className = 'desk-btn';
+                button.textContent = desk.number;
+                
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.desk-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    filterOrdersByDesk(desk.number);
+                });
+                
+                deskButtons.appendChild(button);
+            });
+        }
+        
+        // 根据桌号筛选订单
+        function filterOrdersByDesk(desk) {
+            const filtered = activeOrders.filter(order => order.desk === desk);
+            renderOrdersTable(filtered);
+        }
+        
+        // 页面切换
+        function setupPageNavigation() {
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    
+                    // 更新活动菜单项
+                    document.querySelectorAll('.nav-links a').forEach(a => {
+                        a.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 显示对应页面
+                    document.querySelectorAll('.page-content').forEach(page => {
+                        page.style.display = 'none';
+                    });
+                    document.getElementById(page).style.display = 'block';
+                    
+                    // 如果是桌台管理页面，刷新桌台显示
+                    if (page === 'tables') {
+                        renderDesks();
+                    }
+                    
+                    // 如果是菜单管理页面，添加分类筛选功能
+                    if (page === 'menu-management') {
+                        setupMenuCategoryFilter();
+                    }
+                });
+            });
+        }
+        
+        // 设置菜单分类筛选
+        function setupMenuCategoryFilter() {
+            const categories = document.querySelectorAll('#menuCategories .menu-category');
+            categories.forEach(cat => {
+                cat.addEventListener('click', function() {
+                    categories.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.getAttribute('data-category');
+                    filterMenuItems(category);
+                });
+            });
+            
+            // 添加搜索功能
+            document.getElementById('menuSearchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterMenuItems('all', searchTerm);
+            });
+        }
+        
+        // 筛选菜单项
+        function filterMenuItems(category, searchTerm = '') {
+            let filteredItems = [...menuItems];
+            
+            if (category !== 'all') {
+                filteredItems = filteredItems.filter(item => item.category === category);
+            }
+            
+            if (searchTerm) {
+                filteredItems = filteredItems.filter(item => 
+                    item.name.toLowerCase().includes(searchTerm) || 
+                    item.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            renderMenuItems(filteredItems);
+        }
+        
+        // 生成模拟订单数据
+        function generateOrders() {
+            return [
+                {
+                    id: 'ORD-958234',
+                    desk: "三号桌",
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '京葱鸡肉', price: 6, quantity: 2 },
+                        { name: '鸡软骨', price: 6, quantity: 1 },
+                        { name: '明太子西葫芦', price: 6, quantity: 2 }
+                    ],
+                    status: '待处理',
+                    statusClass: 'pending',
+                    staff: '张明',
+                    notes: '少放盐，不要辣',
+                    total: 42
+                },
+                {
+                    id: 'ORD-758142',
+                    desk: "六号桌",
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '青花鱼', price: 28, quantity: 1 },
+                        { name: '芝士年糕', price: 8, quantity: 2 }
+                    ],
+                    status: '制作中',
+                    statusClass: 'preparing',
+                    staff: '李华',
+                    notes: '青花鱼要烤焦一点',
+                    total: 44
+                },
+                {
+                    id: 'ORD-451289',
+                    desk: "二号桌",
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '鸡中翅', price: 6, quantity: 3 },
+                        { name: '鸡脖肉', price: 6, quantity: 2 }
+                    ],
+                    status: '待处理',
+                    statusClass: 'pending',
+                    staff: '王芳',
+                    notes: '加冰啤酒',
+                    total: 30
+                }
+            ];
+        }
+        
+        // 生成菜单数据
+        function generateMenuItems() {
+            const menuItems = [
+                { id: 1, name: "京葱鸡肉", price: 6, category: "chicken", description: "精选鸡腿肉搭配新鲜京葱" },
+                { id: 2, name: "鸡软骨", price: 6, category: "chicken", description: "香脆鸡软骨，口感独特" },
+                { id: 3, name: "鸡中翅", price: 6, category: "chicken", description: "整只鸡翅中段，肉质鲜嫩" },
+                { id: 7, name: "烤鸡心", price: 5, category: "rare", description: "新鲜鸡心，炭火慢烤" },
+                { id: 13, name: "提灯", price: 6, category: "rare", description: "特色稀有部位，口感丰富" },
+                { id: 15, name: "烤香菇", price: 3, category: "vegetable", description: "新鲜香菇，炭火烤制" },
+                { id: 16, name: "明太子西葫芦", price: 6, category: "vegetable", description: "西葫芦搭配明太子酱" },
+                { id: 20, name: "青花鱼", price: 28, category: "meat", description: "新鲜青花鱼，日式烤制" },
+                { id: 22, name: "牛肉粒", price: 7, category: "meat", description: "澳洲和牛切粒" },
+                { id: 26, name: "梅酒", price: 98, category: "drink", description: "日本进口梅酒" },
+                { id: 30, name: "可乐", price: 5, category: "drink", description: "冰镇可口可乐" }
+            ];
+            
+            return menuItems;
+        }
+        
+        // 渲染订单表格
+        function renderOrdersTable(orders) {
+            const tableBody = document.getElementById('ordersTableBody');
+            tableBody.innerHTML = '';
+            
+            if (orders.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" class="empty-state"><i class="fas fa-inbox"></i><h3>暂无订单数据</h3></td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            orders.forEach(order => {
+                // 计算菜品数量和总价
+                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.desk}</td>
+                    <td>${order.time}</td>
+                    <td>${itemCount}</td>
+                    <td>¥${order.total.toFixed(2)}</td>
+                    <td><span class="status status-${order.statusClass}">${order.status}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-info view-order-btn">
+                            <i class="fas fa-eye"></i> 查看
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-order-btn">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                        ${order.statusClass === 'pending' ? 
+                            `<button class="btn btn-sm btn-success process-order-btn">
+                                <i class="fas fa-check"></i> 接单
+                            </button>` : 
+                            order.statusClass === 'preparing' ? 
+                            `<button class="btn btn-sm btn-success complete-order-btn">
+                                <i class="fas fa-check"></i> 完成
+                            </button>` : 
+                            `<button class="btn btn-sm btn-primary print-order-btn">
+                                <i class="fas fa-print"></i> 打印
+                            </button>`
+                        }
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+                
+                // 添加事件监听器
+                row.querySelector('.view-order-btn').addEventListener('click', () => {
+                    viewOrderDetails(order);
+                });
+                
+                row.querySelector('.delete-order-btn').addEventListener('click', () => {
+                    if (confirm(`确定要删除订单 ${order.id} 吗？`)) {
+                        const index = activeOrders.findIndex(o => o.id === order.id);
+                        if (index !== -1) {
+                            activeOrders.splice(index, 1);
+                            saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                            renderOrdersTable(activeOrders);
+                            alert('订单已删除！');
+                        }
+                    }
+                });
+                
+                if (row.querySelector('.process-order-btn')) {
+                    row.querySelector('.process-order-btn').addEventListener('click', () => {
+                        order.status = '制作中';
+                        order.statusClass = 'preparing';
+                        saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                        renderOrdersTable(activeOrders);
+                    });
+                }
+                
+                if (row.querySelector('.complete-order-btn')) {
+                    row.querySelector('.complete-order-btn').addEventListener('click', () => {
+                        order.status = '已完成';
+                        order.statusClass = 'completed';
+                        
+                        // 将订单移动到已完成列表
+                        completedOrders.push(order);
+                        const index = activeOrders.findIndex(o => o.id === order.id);
+                        if (index !== -1) {
+                            activeOrders.splice(index, 1);
+                        }
+                        
+                        // 保存数据
+                        saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                        saveData(STORAGE_KEYS.COMPLETED_ORDERS, completedOrders);
+                        
+                        // 更新表格
+                        renderOrdersTable(activeOrders);
+                        renderHistoryOrders();
+                        
+                        alert(`订单 ${order.id} 已完成！`);
+                    });
+                }
+                
+                if (row.querySelector('.print-order-btn')) {
+                    row.querySelector('.print-order-btn').addEventListener('click', () => {
+                        alert(`订单 ${order.id} 已发送到打印机！`);
+                    });
+                }
+            });
+        }
+        
+        // 渲染历史订单
+        function renderHistoryOrders() {
+            const tableBody = document.getElementById('historyOrdersTable');
+            tableBody.innerHTML = '';
+            
+            if (completedOrders.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" class="empty-state"><i class="fas fa-inbox"></i><h3>暂无历史订单数据</h3></td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            completedOrders.forEach(order => {
+                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.desk}</td>
+                    <td>${order.time}</td>
+                    <td>${itemCount}</td>
+                    <td>¥${order.total.toFixed(2)}</td>
+                    <td><span class="status status-completed">已完成</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-info view-history-btn">
+                            <i class="fas fa-eye"></i> 查看
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-history-btn">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+                
+                // 添加事件监听器
+                row.querySelector('.view-history-btn').addEventListener('click', () => {
+                    viewOrderDetails(order);
+                });
+                
+                row.querySelector('.delete-history-btn').addEventListener('click', () => {
+                    if (confirm(`确定要删除订单 ${order.id} 吗？`)) {
+                        const index = completedOrders.findIndex(o => o.id === order.id);
+                        if (index !== -1) {
+                            completedOrders.splice(index, 1);
+                            saveData(STORAGE_KEYS.COMPLETED_ORDERS, completedOrders);
+                            renderHistoryOrders();
+                            alert('订单已删除！');
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 渲染菜单项
+        function renderMenuItems(items = menuItems) {
+            const menuGrid = document.getElementById('menuItemsGrid');
+            menuGrid.innerHTML = '';
+            
+            if (items.length === 0) {
+                menuGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fas fa-utensils"></i>
+                        <h3>暂无菜品数据</h3>
+                        <p>点击"添加菜品"按钮创建新菜品</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'menu-item-card';
+                
+                card.innerHTML = `
+                    <div class="menu-item-img">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="menu-item-info">
+                        <div class="menu-item-name">${item.name}</div>
+                        <div class="menu-item-price">¥${item.price.toFixed(2)}</div>
+                        <div class="menu-item-description">${item.description}</div>
+                        <div class="menu-item-actions">
+                            <button class="btn btn-sm btn-outline edit-menu-item-btn">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-sm btn-outline delete-menu-item-btn">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                menuGrid.appendChild(card);
+                
+                // 添加事件监听器
+                card.querySelector('.edit-menu-item-btn').addEventListener('click', () => {
+                    openMenuItemModal(item);
+                });
+                
+                card.querySelector('.delete-menu-item-btn').addEventListener('click', () => {
+                    if (confirm(`确定要删除菜品 "${item.name}" 吗？`)) {
+                        const index = menuItems.findIndex(m => m.id === item.id);
+                        if (index !== -1) {
+                            menuItems.splice(index, 1);
+                            saveData(STORAGE_KEYS.MENU_ITEMS, menuItems);
+                            renderMenuItems();
+                        }
+                    }
+                });
+            });
+        }
+        
+        // 打开菜单项编辑弹窗
+        function openMenuItemModal(item = null) {
+            const modal = document.getElementById('menuItemModal');
+            const title = document.getElementById('menuItemModalTitle');
+            const saveBtn = document.getElementById('saveMenuItemBtn');
+            
+            if (item) {
+                title.textContent = '编辑菜品';
+                document.getElementById('menuItemName').value = item.name;
+                document.getElementById('menuItemPrice').value = item.price;
+                document.getElementById('menuItemCategory').value = item.category;
+                document.getElementById('menuItemDescription').value = item.description;
+                currentMenuItem = item;
+            } else {
+                title.textContent = '添加新菜品';
+                document.getElementById('menuItemName').value = '';
+                document.getElementById('menuItemPrice').value = '';
+                document.getElementById('menuItemCategory').value = 'chicken';
+                document.getElementById('menuItemDescription').value = '';
+                currentMenuItem = null;
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        // 保存菜单项
+        function saveMenuItem() {
+            const name = document.getElementById('menuItemName').value;
+            const price = parseFloat(document.getElementById('menuItemPrice').value);
+            const category = document.getElementById('menuItemCategory').value;
+            const description = document.getElementById('menuItemDescription').value;
+            
+            if (!name) {
+                alert('请输入菜品名称！');
+                return;
+            }
+            
+            if (isNaN(price) || price <= 0) {
+                alert('请输入有效的价格！');
+                return;
+            }
+            
+            if (currentMenuItem) {
+                // 更新现有菜品
+                currentMenuItem.name = name;
+                currentMenuItem.price = price;
+                currentMenuItem.category = category;
+                currentMenuItem.description = description;
+            } else {
+                // 创建新菜品
+                const newItem = {
+                    id: Date.now(), // 使用时间戳作为ID
+                    name: name,
+                    price: price,
+                    category: category,
+                    description: description
+                };
+                menuItems.push(newItem);
+            }
+            
+            saveData(STORAGE_KEYS.MENU_ITEMS, menuItems);
+            renderMenuItems();
+            closeMenuItemModal();
+            alert(`菜品 "${name}" 已保存！`);
+        }
+        
+        // 渲染桌台
+        function renderDesks() {
+            const desksContainer = document.getElementById('desksContainer');
+            desksContainer.innerHTML = '';
+            
+            desks.forEach(desk => {
+                const card = document.createElement('div');
+                card.className = 'desk-card';
+                
+                card.innerHTML = `
+                    <div class="desk-status ${desk.status === 'occupied' ? 'occupied' : 'available'}">
+                        ${desk.status === 'occupied' ? '使用中' : '空闲'}
+                    </div>
+                    <div class="desk-number">${desk.number}</div>
+                    <div class="desk-capacity">${desk.capacity}人桌</div>
+                    <p>${desk.location}</p>
+                    <div class="desk-actions">
+                        <button class="btn btn-sm btn-outline edit-desk-btn">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-desk-btn">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                `;
+                
+                desksContainer.appendChild(card);
+                
+                // 添加事件监听器
+                card.querySelector('.delete-desk-btn').addEventListener('click', () => {
+                    if (confirm(`确定要删除${desk.number}吗？`)) {
+                        const index = desks.findIndex(d => d.id === desk.id);
+                        if (index !== -1) {
+                            desks.splice(index, 1);
+                            saveData(STORAGE_KEYS.DESKS, desks);
+                            renderDesks();
+                            setupDeskButtons();
+                            alert(`${desk.number}已删除！`);
+                        }
+                    }
+                });
+                
+                card.querySelector('.edit-desk-btn').addEventListener('click', () => {
+                    // 填充表单
+                    document.getElementById('tableNumber').value = desk.number;
+                    document.getElementById('tableCapacity').value = desk.capacity;
+                    document.getElementById('tableLocation').value = desk.location;
+                    
+                    // 显示弹窗
+                    document.getElementById('addTableModal').style.display = 'flex';
+                    
+                    // 存储当前编辑的桌台
+                    currentEditingDesk = desk;
+                });
+            });
+            
+            // 添加添加桌台按钮
+            const addCard = document.createElement('div');
+            addCard.className = 'desk-card add-desk-btn';
+            addCard.innerHTML = `
+                <i class="fas fa-plus-circle"></i>
+                <div>添加新桌台</div>
+            `;
+            
+            addCard.addEventListener('click', () => {
+                document.getElementById('tableNumber').value = '';
+                document.getElementById('tableCapacity').value = '4';
+                document.getElementById('tableLocation').value = '';
+                document.getElementById('addTableModal').style.display = 'flex';
+                currentEditingDesk = null;
+            });
+            
+            desksContainer.appendChild(addCard);
+        }
+        
+        // 保存数据到localStorage
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+        
+        // 从localStorage加载数据
+        function loadData(key, defaultValue) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultValue;
+        }
+        
+        // 初始化数据
+        function initializeData() {
+            // 加载数据或使用默认值
+            activeOrders = loadData(STORAGE_KEYS.ACTIVE_ORDERS, generateOrders());
+            completedOrders = loadData(STORAGE_KEYS.COMPLETED_ORDERS, [
+                {
+                    id: 'ORD-334567',
+                    desk: "一号桌",
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '京葱鸡肉', price: 6, quantity: 2 },
+                        { name: '鸡软骨', price: 6, quantity: 1 },
+                        { name: '可乐', price: 5, quantity: 2 }
+                    ],
+                    status: '已完成',
+                    statusClass: 'completed',
+                    staff: '张明',
+                    notes: '',
+                    total: 29
+                },
+                {
+                    id: 'ORD-112378',
+                    desk: "五号桌",
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '梅酒', price: 98, quantity: 1 }
+                    ],
+                    status: '已完成',
+                    statusClass: 'completed',
+                    staff: '李华',
+                    notes: '加冰',
+                    total: 98
+                }
+            ]);
+            menuItems = loadData(STORAGE_KEYS.MENU_ITEMS, generateMenuItems());
+            desks = loadData(STORAGE_KEYS.DESKS, [
+                { id: 1, number: "一号桌", capacity: 4, status: "occupied", location: "靠窗位置" },
+                { id: 2, number: "二号桌", capacity: 6, status: "occupied", location: "中央区域" },
+                { id: 3, number: "三号桌", capacity: 2, status: "available", location: "吧台旁" },
+                { id: 4, number: "四号桌", capacity: 4, status: "available", location: "入口处" },
+                { id: 5, number: "五号桌", capacity: 8, status: "occupied", location: "包间" },
+                { id: 6, number: "六号桌", capacity: 4, status: "available", location: "后区" },
+                { id: 7, number: "七号桌", capacity: 6, status: "available", location: "露台区" },
+                { id: 8, number: "八号桌", capacity: 4, status: "occupied", location: "VIP区" }
+            ]);
+        }
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 初始化数据
+            initializeData();
+            
+            // 设置页面导航
+            setupPageNavigation();
+            
+            // 渲染订单表格
+            setupDeskButtons();
+            renderOrdersTable(activeOrders);
+            renderHistoryOrders();
+            
+            // 渲染菜单项
+            renderMenuItems();
+            
+            // 渲染桌台
+            renderDesks();
+            
+            // 添加菜单项按钮事件
+            document.getElementById('addMenuItemBtn').addEventListener('click', () => {
+                openMenuItemModal();
+            });
+            
+            // 保存菜单项按钮事件
+            document.getElementById('saveMenuItemBtn').addEventListener('click', saveMenuItem);
+            
+            // 导出按钮事件
+            document.getElementById('exportDailyBtn').addEventListener('click', () => {
+                alert('导出日订单功能');
+            });
+            
+            document.getElementById('exportWeeklyBtn').addEventListener('click', () => {
+                alert('导出周订单功能');
+            });
+            
+            document.getElementById('exportMonthlyBtn').addEventListener('click', () => {
+                alert('导出月订单功能');
+            });
+            
+            // 刷新订单按钮
+            document.getElementById('refreshOrdersBtn').addEventListener('click', () => {
+                // 模拟获取新订单
+                const newOrder = {
+                    id: `ORD-${Math.floor(Math.random() * 900000 + 100000)}`,
+                    desk: desks[Math.floor(Math.random() * desks.length)].number,
+                    time: new Date().toLocaleString('zh-CN'),
+                    items: [
+                        { name: '京葱鸡肉', price: 6, quantity: Math.floor(Math.random() * 3) + 1 },
+                        { name: '鸡软骨', price: 6, quantity: Math.floor(Math.random() * 2) + 1 },
+                        { name: '可乐', price: 5, quantity: Math.floor(Math.random() * 2) + 1 }
+                    ],
+                    status: '待处理',
+                    statusClass: 'pending',
+                    staff: ['张明', '李华', '王芳'][Math.floor(Math.random() * 3)],
+                    notes: '',
+                    total: 0
+                };
+                
+                // 计算总价
+                newOrder.total = newOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                // 添加到活动订单
+                activeOrders.push(newOrder);
+                saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                renderOrdersTable(activeOrders);
+                
+                alert('已刷新订单，发现新订单！');
+            });
+            
+            // 刷新桌台按钮
+            document.getElementById('refreshDesksBtn').addEventListener('click', () => {
+                renderDesks();
+                setupDeskButtons();
+                alert('桌台信息已刷新！');
+            });
+            
+            // 订单操作按钮事件
+            document.getElementById('deleteOrderBtn').addEventListener('click', () => {
+                if (currentModalOrder && confirm(`确定要删除订单 ${currentModalOrder.id} 吗？`)) {
+                    const index = activeOrders.findIndex(o => o.id === currentModalOrder.id);
+                    if (index !== -1) {
+                        activeOrders.splice(index, 1);
+                        saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                        renderOrdersTable(activeOrders);
+                        alert('订单已删除！');
+                        closeModal();
+                    }
+                }
+            });
+            
+            document.getElementById('editOrderBtn').addEventListener('click', () => {
+                alert('编辑订单功能已打开');
+            });
+            
+            document.getElementById('completeOrderBtn').addEventListener('click', () => {
+                if (currentModalOrder) {
+                    currentModalOrder.status = '已完成';
+                    currentModalOrder.statusClass = 'completed';
+                    
+                    // 将订单移动到已完成列表
+                    completedOrders.push(currentModalOrder);
+                    const index = activeOrders.findIndex(o => o.id === currentModalOrder.id);
+                    if (index !== -1) {
+                        activeOrders.splice(index, 1);
+                    }
+                    
+                    // 保存数据
+                    saveData(STORAGE_KEYS.ACTIVE_ORDERS, activeOrders);
+                    saveData(STORAGE_KEYS.COMPLETED_ORDERS, completedOrders);
+                    
+                    // 更新表格
+                    renderOrdersTable(activeOrders);
+                    renderHistoryOrders();
+                    
+                    alert(`订单 ${currentModalOrder.id} 已完成！`);
+                    closeModal();
+                }
+            });
+            
+            document.getElementById('printOrderBtn').addEventListener('click', () => {
+                alert(`订单 ${currentModalOrder.id} 已发送到打印机！`);
+            });
+            
+            // 保存桌台
+            document.getElementById('saveTableBtn').addEventListener('click', () => {
+                const number = document.getElementById('tableNumber').value;
+                const capacity = parseInt(document.getElementById('tableCapacity').value);
+                const location = document.getElementById('tableLocation').value;
+                
+                if (!number) {
+                    alert('请输入桌台编号！');
+                    return;
+                }
+                
+                if (isNaN(capacity) || capacity < 1 || capacity > 20) {
+                    alert('请输入有效的座位数量（1-20）！');
+                    return;
+                }
+                
+                // 检查桌号是否已存在（排除当前编辑的桌台）
+                if (desks.some(d => d.number === number && (!currentEditingDesk || d.id !== currentEditingDesk.id))) {
+                    alert('该桌号已存在，请使用其他编号！');
+                    return;
+                }
+                
+                if (currentEditingDesk) {
+                    // 更新现有桌台
+                    currentEditingDesk.number = number;
+                    currentEditingDesk.capacity = capacity;
+                    currentEditingDesk.location = location;
+                } else {
+                    // 创建新桌台
+                    const newDesk = {
+                        id: Date.now(),
+                        number: number,
+                        capacity: capacity,
+                        location: location || '无描述',
+                        status: 'available'
+                    };
+                    
+                    desks.push(newDesk);
+                }
+                
+                saveData(STORAGE_KEYS.DESKS, desks);
+                renderDesks();
+                setupDeskButtons();
+                closeAddTableModal();
+                alert(`桌台 ${number} 已保存！`);
+                currentEditingDesk = null;
+            });
+        });
+        
+        // 点击弹窗外部关闭
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+            
+            const tableModal = document.getElementById('addTableModal');
+            if (event.target === tableModal) {
+                closeAddTableModal();
+                currentEditingDesk = null;
+            }
+            
+            const menuItemModal = document.getElementById('menuItemModal');
+            if (event.target === menuItemModal) {
+                closeMenuItemModal();
+            }
+        });
+    </script>
+</body>
+</html>
