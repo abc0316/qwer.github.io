@@ -479,6 +479,109 @@
             font-size: 0.8rem;
             font-weight: bold;
         }
+        
+        /* 新增订单确认弹窗 */
+        .order-confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .order-confirm-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #2c3e50, #1a2530);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--primary);
+        }
+        
+        .modal-header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .modal-order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid var(--primary);
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .modal-confirm {
+            background: var(--success);
+            color: white;
+        }
+        
+        .modal-cancel {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .modal-confirm:hover {
+            background: #219653;
+        }
+        
+        .modal-cancel:hover {
+            background: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -555,6 +658,26 @@
     
     <!-- 通知 -->
     <div class="notification" id="notification">操作成功！</div>
+    
+    <!-- 订单确认弹窗 -->
+    <div class="order-confirm-modal" id="orderConfirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-check-circle"></i> 确认订单</h2>
+            </div>
+            <div class="modal-body" id="modalOrderList">
+                <!-- 订单内容 -->
+            </div>
+            <div class="modal-total">
+                <span>总计:</span>
+                <span id="modalTotalAmount">¥0.00</span>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-cancel" id="modalCancelBtn">取消</button>
+                <button class="modal-btn modal-confirm" id="modalConfirmBtn">确认提交</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // 初始菜单数据
@@ -621,6 +744,11 @@
         const bottomTotal = document.getElementById('bottomTotal');
         const viewCartBtn = document.getElementById('viewCartBtn');
         const orderStatus = document.getElementById('orderStatus');
+        const orderConfirmModal = document.getElementById('orderConfirmModal');
+        const modalOrderList = document.getElementById('modalOrderList');
+        const modalTotalAmount = document.getElementById('modalTotalAmount');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
         
         // 初始化页面
         function initPage() {
@@ -797,29 +925,60 @@
             }, 3000);
         }
         
-        // 提交订单
-        function submitOrder() {
+        // 显示订单确认弹窗
+        function showOrderConfirm() {
             if (currentOrder.length === 0) {
                 showNotification('订单为空，请添加商品');
                 return;
             }
             
-            // 提交到后台
-            const total = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const now = new Date();
+            // 更新弹窗中的订单内容
+            modalOrderList.innerHTML = '';
             
+            currentOrder.forEach(item => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'modal-order-item';
+                orderItem.innerHTML = `
+                    <div>
+                        <span>${item.name}</span>
+                        <span class="item-quantity"> × ${item.quantity}</span>
+                    </div>
+                    <div class="item-total">¥${(item.price * item.quantity).toFixed(2)}</div>
+                `;
+                modalOrderList.appendChild(orderItem);
+            });
+            
+            // 更新弹窗中的总金额
+            const total = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            modalTotalAmount.textContent = `¥${total.toFixed(2)}`;
+            
+            // 显示弹窗
+            orderConfirmModal.classList.add('show');
+        }
+        
+        // 提交订单
+        function submitOrder() {
             // 创建订单对象
+            const now = new Date();
+            const total = currentOrder.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
             const order = {
                 id: 'ORD-' + now.getTime().toString().slice(-6),
-                desk: 1, // 一号桌
+                desk: 1,
                 time: now.toLocaleTimeString('zh-CN'),
                 total: total,
                 items: [...currentOrder],
-                status: 'submitted'
+                status: 'submitted',
+                statusClass: 'pending'
             };
             
-            // 保存到本地存储（模拟提交到后台）
+            // 保存到localStorage
             localStorage.setItem('desk1Order', JSON.stringify(order));
+            
+            // 保存到订单列表
+            let orders = JSON.parse(localStorage.getItem('orders')) || [];
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
             
             // 更新订单状态
             orderStatus.innerHTML = `
@@ -833,6 +992,13 @@
             
             // 标记订单已提交
             orderSubmitted = true;
+            
+            // 清空当前订单
+            currentOrder = [];
+            updateOrderDisplay();
+            
+            // 关闭弹窗
+            orderConfirmModal.classList.remove('show');
             
             showNotification('订单已成功提交！');
             
@@ -858,6 +1024,11 @@
         
         // 清空订单
         function clearOrder() {
+            if (orderSubmitted) {
+                showNotification('订单已提交，不能清空');
+                return;
+            }
+            
             currentOrder = [];
             updateOrderDisplay();
             orderStatus.innerHTML = '<div class="status-pending">等待提交订单</div>';
@@ -921,7 +1092,7 @@
             });
             
             // 按钮事件
-            submitBtn.addEventListener('click', submitOrder);
+            submitBtn.addEventListener('click', showOrderConfirm);
             addMoreBtn.addEventListener('click', addMoreItems);
             clearBtn.addEventListener('click', clearOrder);
             
@@ -929,6 +1100,13 @@
             viewCartBtn.addEventListener('click', () => {
                 document.querySelector('.order-section').scrollIntoView({ behavior: 'smooth' });
             });
+            
+            // 弹窗按钮事件
+            modalCancelBtn.addEventListener('click', () => {
+                orderConfirmModal.classList.remove('show');
+            });
+            
+            modalConfirmBtn.addEventListener('click', submitOrder);
         }
         
         // 页面加载时初始化
